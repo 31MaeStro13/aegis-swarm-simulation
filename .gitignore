@@ -1,0 +1,44 @@
+# Python / uv
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+.venv/
+env/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Frontend / Node
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+*.log
+
+# Simulation outputs & data
+output/
+plots/
+*.png
+*.jpg
+*.csv
+*.jsonl
+!tests/fixtures/*.csv
+!tests/fixtures/*.json
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

@@ -1,0 +1,208 @@
+{
+  "$defs": {
+    "DroneState": {
+      "additionalProperties": false,
+      "description": "Discrete state of a single drone within the simulation grid.",
+      "properties": {
+        "id": {
+          "description": "Unique drone identifier (e.g. 'drone_1')",
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "x": {
+          "description": "Column index (0-indexed)",
+          "minimum": 0,
+          "title": "X",
+          "type": "integer"
+        },
+        "y": {
+          "description": "Row index (0-indexed)",
+          "minimum": 0,
+          "title": "Y",
+          "type": "integer"
+        },
+        "battery": {
+          "description": "Battery level percentage (0.0 - 100.0)",
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Battery",
+          "type": "number"
+        },
+        "status": {
+          "$ref": "#/$defs/DroneStatus",
+          "description": "Current operational state"
+        }
+      },
+      "required": [
+        "id",
+        "x",
+        "y",
+        "battery",
+        "status"
+      ],
+      "title": "DroneState",
+      "type": "object"
+    },
+    "DroneStatus": {
+      "description": "Operational status of an individual UAV in the swarm.",
+      "enum": [
+        "idle",
+        "searching",
+        "returning",
+        "failed"
+      ],
+      "title": "DroneStatus",
+      "type": "string"
+    },
+    "FailoverEvent": {
+      "additionalProperties": false,
+      "description": "Event triggered upon simulated UAV failure and sector reassignment.",
+      "properties": {
+        "event_id": {
+          "description": "Unique event identifier",
+          "minLength": 1,
+          "title": "Event Id",
+          "type": "string"
+        },
+        "tick": {
+          "description": "Simulation step when failure occurred",
+          "minimum": 0,
+          "title": "Tick",
+          "type": "integer"
+        },
+        "failed_drone_id": {
+          "description": "ID of the failed drone",
+          "minLength": 1,
+          "title": "Failed Drone Id",
+          "type": "string"
+        },
+        "reason": {
+          "default": "simulated_hardware_failure",
+          "description": "Reason for failure",
+          "title": "Reason",
+          "type": "string"
+        },
+        "reassigned_cells": {
+          "additionalProperties": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "description": "Reassigned cells mapping: drone_id -> [(x, y), ...]",
+          "title": "Reassigned Cells",
+          "type": "object"
+        }
+      },
+      "required": [
+        "event_id",
+        "tick",
+        "failed_drone_id"
+      ],
+      "title": "FailoverEvent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Consolidated state snapshot broadcasted at each simulation step.\nStrictly deterministic: uses sim_time_s instead of wall-clock time for repeatable seed runs.",
+  "properties": {
+    "mission_id": {
+      "description": "Unique mission run identifier",
+      "minLength": 1,
+      "title": "Mission Id",
+      "type": "string"
+    },
+    "tick": {
+      "description": "Discrete simulation step counter (0, 1, 2...)",
+      "minimum": 0,
+      "title": "Tick",
+      "type": "integer"
+    },
+    "sim_time_s": {
+      "description": "Simulation time in seconds from start",
+      "minimum": 0.0,
+      "title": "Sim Time S",
+      "type": "number"
+    },
+    "grid_size": {
+      "default": [
+        40,
+        40
+      ],
+      "description": "Grid dimensions (cols, rows)",
+      "maxItems": 2,
+      "minItems": 2,
+      "prefixItems": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        }
+      ],
+      "title": "Grid Size",
+      "type": "array"
+    },
+    "drones": {
+      "description": "List of all drone states",
+      "items": {
+        "$ref": "#/$defs/DroneState"
+      },
+      "title": "Drones",
+      "type": "array"
+    },
+    "probability_map": {
+      "description": "Normalized float probability matrix (rows x cols)",
+      "items": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "title": "Probability Map",
+      "type": "array"
+    },
+    "coverage_map": {
+      "description": "Integer visit counter matrix (rows x cols)",
+      "items": {
+        "items": {
+          "type": "integer"
+        },
+        "type": "array"
+      },
+      "title": "Coverage Map",
+      "type": "array"
+    },
+    "event_log": {
+      "description": "Recent failover events log",
+      "items": {
+        "$ref": "#/$defs/FailoverEvent"
+      },
+      "title": "Event Log",
+      "type": "array"
+    }
+  },
+  "required": [
+    "mission_id",
+    "tick",
+    "sim_time_s",
+    "drones",
+    "probability_map",
+    "coverage_map"
+  ],
+  "title": "TelemetryPacket",
+  "type": "object"
+}
